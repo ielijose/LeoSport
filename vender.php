@@ -14,8 +14,15 @@ $numrows = $productos->num_rows;
 
 <!DOCTYPE html>
 <html lang="es">	
-	<? include "assets/includes/head.php"; ?>
-
+	<? $page_title="Vender"; include "assets/includes/head.php"; ?>
+	<style>
+		.ace-spinner{
+			width: 120px !important;
+		}
+		.cantidad{
+			margin-left: 0px !important; 
+		}
+	</style>
 	<body>
 		<? include "assets/includes/nav.php"; ?>
 
@@ -37,16 +44,80 @@ $numrows = $productos->num_rows;
 
 					<div class="page-content">
 						<div class="page-header">
-							<a data-toggle="modal" class="btn btn-info btn-sm pull-right" href="#add"><i class="icon-plus-sign-alt  bigger-110"></i>Agregar producto</a>
-							<h1>Inventario</h1>
+							<h1>Vender</h1>
 							
 						</div><!-- /.page-header -->
 
 						
 
+						<div class="widget-box ">
+							<div class="widget-header widget-header-small">
+								<h5 class="lighter">Cliente</h5>
+							</div>
+
+							<div class="widget-body">
+								<div class="widget-main">
+									<div class="row">
+										<div class="col-xs-12 col-sm-12">											
+												<div class="input-group search-ci-box col-sm-6">
+													<input type="text" class="form-control ci-value" placeholder="Cédula de identidad">
+													<span class="input-group-btn">
+														<button type="button" class="btn btn-purple btn-sm searchci">
+															Buscar
+															<i class="icon-search icon-on-right bigger-110"></i>
+														</button>
+													</span>
+												</div>
+											<!-- data -->
+
+												<div class="profile-user-info profile-user-info-striped" style="display: none" id="client-info" >
+													<div class="profile-info-row">
+														<div class="profile-info-name"> Nombre </div>
+
+														<div class="profile-info-value">
+															<span class="editable editable-click data-nombre"></span>
+														</div>
+													</div>
+
+													<div class="profile-info-row">
+														<div class="profile-info-name"> CI </div>
+
+														<div class="profile-info-value">
+															<span class="editable editable-click data-ci"></span>
+														</div>
+													</div>
+
+													<div class="profile-info-row">
+														<div class="profile-info-name"> Dirección </div>
+
+														<div class="profile-info-value">
+															<i class="icon-map-marker light-orange bigger-110"></i>
+															<span class="editable editable-click data-direccion"></span>
+														</div>
+													</div>						
+
+													<div class="profile-info-row">
+														<div class="profile-info-name"> Compras </div>
+
+														<div class="profile-info-value">
+															<span class="editable editable-click data-compras"></span>
+														</div>
+													</div>
+												</div>
+
+												<input type="hidden" id="id" class="data-id" value="0">
+
+											<!-- data -->
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 
 
+						
 
+						<hr>
 
 
 
@@ -63,9 +134,9 @@ $numrows = $productos->num_rows;
 														</th>
 														<th>Producto</th>
 														<th>Precio</th>
+														<th>Disponible</th>
 														<th>Cantidad</th>														
-														<!--<th class="hidden-480">Status</th>
-														<th>Acciones</th>-->
+														<!--<th>Acciones</th>-->
 
 													</tr>
 												</thead>
@@ -79,6 +150,11 @@ $numrows = $productos->num_rows;
 														</td>
 														<td class="center"><? echo $precio; ?></td>
 														<td class="center"><? echo $cantidad; ?></td>
+														<td class="center">
+															<span class="block input-icon input-icon-right">
+																<input type="text" class="input-mini cantidad" data-disponible="<? echo $cantidad; ?>" />
+															</span>
+														</td>														
 
 														<!--<td class="hidden-480">
 															<span class="label label-sm label-warning">Expiring</span>
@@ -121,46 +197,46 @@ $numrows = $productos->num_rows;
 
 
 
-					<div id="add" class="modal" aria-hidden="true" style="display: none;">
+					<div id="addClient" class="modal" aria-hidden="true" style="display: none;">
 						<div class="modal-dialog">
 							<div class="modal-content">
 								<div class="modal-header" data-target="#modal-step-contents">
-									<h3 align="center">Ingrese los datos del producto</h3>
+									<h3 align="center">Ingrese los datos del cliente</h3>
 								</div>
 
 								<div class="modal-body step-content" id="modal-step-contents">
 									<div class="step-pane active" id="modal-step1">
 										<div class="center">
 											
-											<form class="form-horizontal" id="add-product">
+											<form class="form-horizontal" id="add-client">
 												<div class="form-group">
-													<label for="producto" class="col-xs-12 col-sm-3 control-label no-padding-right">Nombre:</label>
+													<label for="producto" class="col-xs-12 col-sm-3 control-label no-padding-right">Nombre:&nbsp;</label>
 
 													<div class="col-xs-12 col-sm-5">
 														<span class="block input-icon input-icon-right">
-															<input type="text" id="producto" name="producto" class="width-100">
-															<i class="icon-coffee"></i>
+															<input type="text" style="width:300px" id="nombre" name="nombre">
+															<i class="icon-user" style="margin-right: -120px"></i>
 														</span>
 													</div>													
 												</div>
 
 												<div class="form-group">
-													<label for="cantidad" class="col-xs-12 col-sm-3 control-label no-padding-right">Cantidad:</label>
+													<label for="cantidad" class="col-xs-12 col-sm-3 control-label no-padding-right">Cédula:</label>
 
 													<div class="col-xs-12 col-sm-5">
 														<span class="block input-icon input-icon-right">
-															<input type="text" class="input-mini" name="cantidad" id="cantidad" />
+															<input type="text" disabled="disabled" style="width:300px" id="ci" name="ci">
 														</span>
 													</div>													
 												</div>
 
 												<div class="form-group">
-													<label for="precio" class="col-xs-12 col-sm-3 control-label no-padding-right">Precio:</label>
+													<label for="precio" class="col-xs-12 col-sm-3 control-label no-padding-right">Dirección:&nbsp; </label>
 
 													<div class="col-xs-12 col-sm-5">
 														<span class="block input-icon input-icon-right">
-															<input type="text" id="precio" name="precio" class="width-100">
-															<i class="icon-dollar"></i>
+															<i class="icon-map-marker" style="margin-right: -120px"></i>
+															<textarea id="direccion" style="width:300px" rows="7" name="direccion"></textarea>
 														</span>
 													</div>													
 												</div>
@@ -226,150 +302,8 @@ $numrows = $productos->num_rows;
 		<script src="assets/js/ace-elements.min.js"></script>
 		<script src="assets/js/ace.min.js"></script>
 
-
-		<script type="text/javascript">
-			jQuery(function($) {
-
-				$('#add-product').validate({
-					rules: {
-						producto: {required: true},
-						cantidad: {required: true, number: true},
-						precio: {required: true, number:true}						
-					},
+		<script type="text/javascript" src="assets/js/leosport.js">
 			
-					messages: {
-						producto: {
-							required: "Campo obligatorio."
-						},
-						cantidad: {
-							required: "Campo obligatorio."
-						},
-						precio: {
-							required: "Campo obligatorio."
-						}						
-					},
-			
-					invalidHandler: function (event, validator) { //display error alert on form submit   
-						$('.alert-danger', $('.login-form')).show();
-					},
-			
-					highlight: function (e) {
-						$(e).closest('.form-group').removeClass('has-info').addClass('has-error');
-					},
-			
-					success: function (e) {
-						$(e).closest('.form-group').removeClass('has-error').addClass('has-info');
-						$(e).remove();
-					},
-			
-					errorPlacement: function (error, element) {
-						if(element.is(':checkbox') || element.is(':radio')) {
-							var controls = element.closest('div[class*="col-"]');
-							if(controls.find(':checkbox,:radio').length > 1) controls.append(error);
-							else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
-						}
-						else if(element.is('.select2')) {
-							error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
-						}
-						else if(element.is('.chosen-select')) {
-							error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
-						}
-						else error.insertAfter(element.parent());
-
-					},
-			
-					submitHandler: function (form) {											
-						var datos = formToJSON();
-						console.log(datos);
-						$.ajax({
-							url: './api/item/', 
-							type: 'POST', 
-							data: datos,
-							success : function(data){
-								if(data.producto.id != "error"){
-									$(".btn-cancel").trigger("click");
-									window.location.reload();
-
-								}
-							}
-						})
-					},
-					invalidHandler: function (form) {
-					}
-				});
-
-				$(".btn-sm-ap").on("click", function(){
-					$("#add-product").submit();
-
-				});
-				
-				$('#cantidad').ace_spinner({value:0,min:0,max:100000,step:1, on_sides: true, icon_up:'icon-plus smaller-75', icon_down:'icon-minus smaller-75', btn_up_class:'btn-success' , btn_down_class:'btn-danger'});
-
-				function formToJSON() {
-				    return JSON.stringify({
-				        "producto": $('#producto').val(),
-				        "cantidad": $('#cantidad').val(),
-				        "precio": $('#precio').val()
-				        });
-				}
-
-
-
-
-
-
-
-
-
-
-
-
-
-				var inventario = $('#inventario').dataTable();
-
-				/*$.ajax({
-					dataType: 'JSON',
-					url: '/api/items',
-					async: false,
-					success: function(json) {
-
-						$.each(json.items, function(i, k){
-							console.log(k.id);
-							inventario.fnAddData([k.id, k.producto, k.precio, k.cantidad]);
-						});						
-					},
-					error: function() {
-						alert("failed!");
-					}					
-				});*/
-					
-					
-					$('table th input:checkbox').on('click' , function(){
-						var that = this;
-						$(this).closest('table').find('tr > td:first-child input:checkbox')
-						.each(function(){
-							this.checked = that.checked;
-							$(this).closest('tr').toggleClass('selected');
-						});
-							
-					});
-				
-				
-					$('[data-rel="tooltip"]').tooltip({placement: tooltip_placement});
-					function tooltip_placement(context, source) {
-						var $source = $(source);
-						var $parent = $source.closest('table')
-						var off1 = $parent.offset();
-						var w1 = $parent.width();
-				
-						var off2 = $source.offset();
-						var w2 = $source.width();
-				
-						if( parseInt(off2.left) < parseInt(off1.left) + parseInt(w1 / 2) ) return 'right';
-						return 'left';
-					}
-				
-			})
 		</script>
 	</body>
 
