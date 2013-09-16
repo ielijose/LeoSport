@@ -73,7 +73,7 @@ function addClient() {
 }
 
 function searchClient($ci){
-	$sql = "select c.id, c.ci, c.nombre, c.direccion, (select COUNT(1) FROM facturas f WHERE f.cliente_id = c.id ) as compras FROM clientes c WHERE ci = :ci "; 
+	$sql = "SELECT c.id, c.ci, c.nombre, c.direccion, (SELECT COUNT(1) FROM facturas f WHERE f.cliente_id = c.id) AS compras FROM clientes c WHERE ci = :ci "; 
 	try {
 		$db = getConnection();
 		$stmt = $db->prepare($sql);
@@ -151,6 +151,5 @@ function toPrice($price){
 	
 	return $re;
 }
-
 
 ?>

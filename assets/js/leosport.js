@@ -1,8 +1,12 @@
-jQuery(function($) {	
-	$(".ci-value").focus();			
-	/* DATATABLE*/
-	var inventario = $('#inventario').dataTable();
+(function(){
+	"use strict";
 
+	var client = false;
+
+	$(".ci-value").focus();			
+	/* DATATABLE inventario*/	
+	var inventario = $('#inventario').dataTable();
+	// solo numeros en el campo ci
 	$(".ci-value").on("keypress", function(e){
 		var theEvent = e || window.event;
 		var key = theEvent.keyCode || theEvent.which;
@@ -18,9 +22,9 @@ jQuery(function($) {
 				theEvent.preventDefault();
 		}
 	});
-
+	//crea los botones de sumar a la cantidad
 	$.each($(".cantidad"), function(k,v){
-		disponible = $(this).data("disponible")
+		var disponible = $(this).data("disponible");
 		$(this).ace_spinner({
 			value:0,
 			min:0,
@@ -35,68 +39,88 @@ jQuery(function($) {
 	});
 
 	/* ci search */
-
+	//al darle click al btn de buscar cliente
 	$(".searchci").on("click", function(){
 		var ci = $(".ci-value").val();
 		searchClientByCi(ci);
 	});
-
-
-
-	$(".btn-cancel").on("click", function(){
+	//al cerrar la modal
+	$(".btn-cancel").on("click", function(){ 
 		$(".ci-value").prop('disabled', false);
 	});
-
-	
-
-
-
-			
-	var total = 0;
-	$("#inventario").on("click", ".addToCart",function(){
-		var id = $(this).attr("rel");
-		if($(this).is(":checked"))	{
-			do{ 
-				if(valor<0){
-					alert("Error, el resultado es negativo \nVuelva a ingresar la cantidad...")
-				}
-				var cantidad = prompt("Cantidad de salida:",0);
-				var old = $(this).parent('td').parent('tr').children('td').eq(4).html();
-				var valor = (old*1)+(cantidad*1);
-			}while(valor<0);
-
-			$(this).parent('td').parent('tr').children('td').eq(4).html(valor);	
-			$("#id"+id).val(valor);	
-			if(valor >0){total++;}else if(valor == 0){$(this).removeAttr("checked");}
-		}else{
-			$(this).parent('td').parent('tr').children('td').eq(4).html(0);
-			$("#id"+id).val(0);	
-			total--;
-		}
-	});
-
+	// evitar que se vendan mas productos de los que hay en existencia
 	$("#inventario").on("change", ".cantidad",function(){
 		var c = $(this).val();
 		var m = $(this).data('disponible');
-
 		if(c>m){
-			$(this).val(m);
+			$(this).val(0);
 		}
-
-		
 	});
 
-	$("#submit").on("click",function(){
-		if(!$("#factura").val()){
-			alert("Ingrese la factura");
-			return;
+	// facturar
+
+	$("#facturar").on("click", function(){
+
+		var Sell = new Object();
+		Sell.client = $("#id").val();
+		Sell.items = [];
+
+		$.each($(".cantidad"), function(k,v){
+			var Item = new Object();
+
+			Item.id = $(this).data("id");
+			Item.cantidad = $(this).val();
+			Item.disponible = $(this).data("disponible");
+			
+			if(Item.cantidad > 0)
+				Sell.items.push(Item);
+		});
+
+		var data = JSON.stringify(Sell);
+		console.log(data);
+
+		if(client && Sell.items.length){
+			$(".alert-items").slideUp("slow");
+			alert("puedes seguir");
+		}else{
+			if(!client){
+				$(".ci-value").focus();				
+			}
+			if(!Sell.items.length){
+				$(".alert-items").slideDown("slow");
+			}			
 		}
-		if(total){ 
-	        inventario.fnFilter('');
-	        if(confirm("Esta seguro que desea efectuar la compra?")){
-	            $("#sellForm").submit();
-	        }
-	    }else{ alert("No ha seleccionado ningun producto");}
+	});
+
+	var total = $("#total");	
+
+	$(".spinner-up").on("click", function(){
+		var input = $(this).parent().parent().children(".cantidad");	
+
+		var cantidad = input.val();
+		var precio = input.data("precio");
+		var disponible = input.data("disponible");
+		var old = input.data("old");
+
+		if(cantidad<=disponible && (old!=disponible)){
+			var x = parseInt(total.text());		
+			total.text(parseInt(x + (precio)));
+			input.data("old", cantidad);
+		}
+		
+	});
+	$(".spinner-down").on("click", function(){
+		var input = $(this).parent().parent().children(".cantidad");
+
+		var cantidad = input.val();
+		var precio = input.data("precio");
+		var old = input.data("old");
+
+		if(cantidad>=0 && (old!=0)){
+			var x = parseInt(total.text());		
+			total.text(parseInt(x - (precio)));
+			input.data("old", cantidad);
+		}
 	});
 
 
@@ -155,7 +179,9 @@ jQuery(function($) {
 						$.each(json.data, function(i, j){
 							$(".data-"+i).text(j);
 						});
-						$("#client-info").slideDown("slow");						
+						$("#id").val( json.data.id );
+						$("#client-info").slideDown("slow");	
+						client = true;
 					});					
 				}else{
 					$('#addClient').modal('show');
@@ -178,4 +204,4 @@ jQuery(function($) {
 	}
 		
 	
-})
+})()

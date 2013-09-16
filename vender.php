@@ -44,7 +44,15 @@ $numrows = $productos->num_rows;
 
 					<div class="page-content">
 						<div class="page-header">
+							<a class="btn btn-info btn-sm pull-right" href="#" id="facturar">
+								<i class="icon-plus-sign-alt  bigger-110"></i>Facturar
+							</a>
+
 							<h1>Vender</h1>
+
+							<noscript>
+								Por favor habilita Javascript en tu navegador.
+							</noscript>
 							
 						</div><!-- /.page-header -->
 
@@ -70,7 +78,8 @@ $numrows = $productos->num_rows;
 												</div>
 											<!-- data -->
 
-												<div class="profile-user-info profile-user-info-striped" style="display: none" id="client-info" >
+
+												<div class="profile-user-info profile-user-info-striped col-sm-8" style="display: none" id="client-info" >
 													<div class="profile-info-row">
 														<div class="profile-info-name"> Nombre </div>
 
@@ -103,7 +112,18 @@ $numrows = $productos->num_rows;
 															<span class="editable editable-click data-compras"></span>
 														</div>
 													</div>
+
 												</div>
+
+												<div class="col-sm-2 pull-right" align="center">
+														<span class="btn btn-app btn-sm btn-light no-hover">
+															<span class="line-height-1 bigger-170 blue" id="total"> 0 </span>
+															<br>
+															<span class="line-height-1 smaller-90"> Bs </span>
+														</span>
+													</div>
+
+												
 
 												<input type="hidden" id="id" class="data-id" value="0">
 
@@ -114,10 +134,21 @@ $numrows = $productos->num_rows;
 							</div>
 						</div>
 
+						<!-- ERROR ITEM -->
+						<hr>
 
+						<div class="alert alert-block alert-danger alert-items" style="display:none">
+							<button type="button" class="close" data-dismiss="alert">
+								<i class="icon-remove"></i>
+							</button>
+
+							<i class="icon-cancel red"></i>
+
+							No ha seleccionado ningun artículo del inventario.
+						</div>
 						
 
-						<hr>
+
 
 
 
@@ -133,7 +164,7 @@ $numrows = $productos->num_rows;
 															Código
 														</th>
 														<th>Producto</th>
-														<th>Precio</th>
+														<th class="hidden-480">Precio</th>
 														<th>Disponible</th>
 														<th>Cantidad</th>														
 														<!--<th>Acciones</th>-->
@@ -148,11 +179,14 @@ $numrows = $productos->num_rows;
 														<td>
 															<a href="#"><? echo $producto; ?></a>
 														</td>
-														<td class="center"><? echo $precio; ?></td>
+														<td class="center hidden-480"><? echo $precio; ?></td>
 														<td class="center"><? echo $cantidad; ?></td>
+														
 														<td class="center">
 															<span class="block input-icon input-icon-right">
-																<input type="text" class="input-mini cantidad" data-disponible="<? echo $cantidad; ?>" />
+																<input type="text" class="input-mini cantidad" disabled="disabled" 
+																data-disponible="<? echo $cantidad; ?>" data-id="<? echo $id; ?>" 
+																data-precio="<? echo $precio; ?>" data-old="0"/>
 															</span>
 														</td>														
 

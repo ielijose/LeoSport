@@ -45,7 +45,7 @@
 
 									<i class="icon-ok green"></i>
 
-									Bienvenido asl sistema de control de inventario de <strong>LeoSport C.A.</strong>
+									Bienvenido al sistema de control de inventario de <strong>LeoSport C.A.</strong>
 								</div>
 
 								<div class="row">

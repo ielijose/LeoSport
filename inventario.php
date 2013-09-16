@@ -289,7 +289,6 @@ $numrows = $productos->num_rows;
 								if(data.producto.id != "error"){
 									$(".btn-cancel").trigger("click");
 									window.location.reload();
-
 								}
 							}
 						})
