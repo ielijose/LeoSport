@@ -11,6 +11,8 @@ $app->post('/item/', 'addItem');
 
 $app->post('/client', 'addClient');
 
+$app->post('/sell', 'sell');
+
 $app->get('/client/search/:ci', 'searchClient');
 $app->run();
 
@@ -87,14 +89,78 @@ function searchClient($ci){
 		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
 	}
 }
+
+function sell(){
+    $request = Slim::getInstance()->request();
+    $post = json_decode($request->getBody());
+
+    $createBill = "INSERT INTO facturas (cliente_id, usuario_id) VALUES (:cid, :uid)";
+    $uid = (isset($_SESSION['LS_id'])) ? $_SESSION['LS_id'] : 0;
+    $cid = ($post->client) ? $post->client : 0;
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($createBill);
+        $stmt->bindParam("cid", $cid);
+        $stmt->bindParam("uid", $uid);
+        $stmt->execute();
+        $billId = $db->lastInsertId();
+        $db = null;  
+
+        /* Items */ 
+
+        $json = $post->items;
+
+        $createItem = "INSERT INTO ventas (factura_id, producto_id, cantidad, precio) VALUES (:fid, :pid, :count, :price)";
+        $updateItem = "UPDATE productos SET cantidad = cantidad - :cantidad WHERE id = :id";
+
+        foreach ($post->items as $item) {
+            $id         = $item->id;
+            $cantidad   = $item->cantidad;
+            $disponible = $item->disponible;
+            $precio     = $item->precio;        
+
+            try {
+                $db = getConnection();
+                $stmt = $db->prepare($createItem);
+                $stmt->bindParam("fid", $billId);
+                $stmt->bindParam("pid", $id);
+                $stmt->bindParam("count", $cantidad);
+                $stmt->bindParam("price", $precio);
+                $stmt->execute();
+
+                /* Restar */
+                $stmt = $db->prepare($updateItem);
+                $stmt->bindParam("cantidad", $cantidad);
+                $stmt->bindParam("id", $id);
+                $stmt->execute();
+
+                $db = null;            
+                
+            } catch(PDOException $e) {}
+        }
+
+        $data['error'] = "false";
+        $data['id'] = $billId;
+        $data['url'] = "factura.php?id=".$billId;
+
+        echo indent('{"data": ' . json_encode($data) . '}'); 
+
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+    }
+    
+
+    //echo json_encode($json);
+}
 /* ----------------- */
 
 /* GC */
 
 function getConnection() {
 	$dbhost="localhost";
-	$dbuser="root";
-	$dbpass="2512368";
+	$dbuser="";
+	$dbpass="";
 	$dbname="leosport";
 	$dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

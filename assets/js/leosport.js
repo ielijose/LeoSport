@@ -71,17 +71,27 @@
 			Item.id = $(this).data("id");
 			Item.cantidad = $(this).val();
 			Item.disponible = $(this).data("disponible");
+			Item.precio = $(this).data("precio");
 			
 			if(Item.cantidad > 0)
 				Sell.items.push(Item);
 		});
 
 		var data = JSON.stringify(Sell);
-		console.log(data);
+		//console.log(data);
 
 		if(client && Sell.items.length){
 			$(".alert-items").slideUp("slow");
-			alert("puedes seguir");
+			
+			$.ajax({
+				url : "/api/sell",
+				data: data,
+				type: "POST",
+				success: function(data){
+					console.log(data);
+				}
+			});
+
 		}else{
 			if(!client){
 				$(".ci-value").focus();				
