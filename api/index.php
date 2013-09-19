@@ -158,7 +158,11 @@ function sell(){
 /* GC */
 
 function getConnection() {
+<<<<<<< HEAD
 	$dbhost="localhost";
+=======
+	$dbhost="127.0.0.1";
+>>>>>>> ffd1b716ceb57c368d20646cbfdaed89dc35b952
 	$dbuser="";
 	$dbpass="";
 	$dbname="leosport";
