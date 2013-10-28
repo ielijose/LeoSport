@@ -5,19 +5,19 @@
 
 	<div class="sidebar-shortcuts" id="sidebar-shortcuts">
 		<div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">
-			<button class="btn btn-success">
-				<i class="icon-signal"></i>
+			<button class="btn btn-success" title="Vender">
+				<i class="icon-dollar"></i>
 			</button>
 
-			<button class="btn btn-info">
+			<button class="btn btn-info" title="-">
 				<i class="icon-pencil"></i>
 			</button>
 
-			<button class="btn btn-warning">
+			<button class="btn btn-warning" title="Clientes">
 				<i class="icon-group"></i>
 			</button>
 
-			<button class="btn btn-danger">
+			<button class="btn btn-danger" title="Configuración">
 				<i class="icon-cogs"></i>
 			</button>
 		</div>
@@ -34,12 +34,12 @@
 	</div><!-- #sidebar-shortcuts -->
 
 	<ul class="nav nav-list">
-		<li class="">
+		<!-- <li class="">
 			<a href="index.php">
 				<i class="icon-dashboard"></i>
 				<span class="menu-text"> Escritorio </span>
 			</a>
-		</li>
+		</li>-->
 
 		<li>
 			<a href="inventario.php">
@@ -49,9 +49,25 @@
 		</li>
 
 		<li>
-			<a href="vender.php">
+			<a href="ventas.php">
 				<i class="icon-usd"></i>
-				<span class="menu-text"> Vender </span>
+				<span class="menu-text"> Ventas </span>
+			</a>
+			
+		</li>
+
+		<li>
+			<a href="apartados.php">
+				<i class="icon-briefcase"></i>
+				<span class="menu-text"> Sistema de apartado </span>
+			</a>
+			
+		</li>
+
+		<li>
+			<a href="reportes.php">
+				<i class="icon-calendar"></i>
+				<span class="menu-text"> Reportes </span>
 			</a>
 			
 		</li>

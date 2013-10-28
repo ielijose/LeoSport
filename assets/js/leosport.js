@@ -5,7 +5,8 @@
 
 	$(".ci-value").focus();			
 	/* DATATABLE inventario*/	
-	var inventario = $('#inventario').dataTable();
+	var $inventario = $('#inventario').dataTable({ "aLengthMenu": [[-1],["Todos"]], "iDisplayLength" : -1 });
+
 	// solo numeros en el campo ci
 	$(".ci-value").on("keypress", function(e){
 		var theEvent = e || window.event;
@@ -34,7 +35,7 @@
 			icon_up:'icon-plus smaller-75', 
 			icon_down:'icon-minus smaller-75', 
 			btn_up_class:'btn-success',
-			 btn_down_class:'btn-danger'
+			btn_down_class:'btn-danger'
 		});
 	});
 
@@ -60,10 +61,13 @@
 	// facturar
 
 	$("#facturar").on("click", function(){
+		$inventario.fnFilter('');
 
 		var Sell = new Object();
 		Sell.client = $("#id").val();
 		Sell.items = [];
+		
+		Sell.apartado = apartar || false;
 
 		$.each($(".cantidad"), function(k,v){
 			var Item = new Object();
@@ -88,7 +92,14 @@
 				data: data,
 				type: "POST",
 				success: function(data){
-					console.log(data);
+					data = data.data;
+					if(data.error === "false"){
+						var urlNext = "/factura.php?id=";
+						if(apartar){
+							urlNext = "apartado.php?id=";
+						}
+						window.location.href = urlNext + data.id;
+					}
 				}
 			});
 
@@ -132,9 +143,6 @@
 			input.data("old", cantidad);
 		}
 	});
-
-
-
 	
 	/* VALIDAR new-client */
 
@@ -163,12 +171,43 @@
 				}
 			});
 		}		
+	});	
+
+	$('#new-pay').validate({
+		rules: {
+			bs: {required: true, number : true},
+			descripcion: {required: true}						
+		},
+		messages: {
+			bs: { required: "Campo obligatorio." },
+			descripcion: { required: "Campo obligatorio." }					
+		},
+
+		submitHandler: function (form) {											
+			var datos = JSON.stringify({"factura_id": $('#fid').val(), "bs": $('#bs').val(), "descripcion": $('#descripcion').val() });
+			console.log(datos);
+			$.ajax({
+				url: './api/load-pay', 
+				type: 'POST', 
+				data: datos,
+				success : function(data){
+					if(data.pay.id != "error"){
+						form.reset();
+						$(".btn-cancel").trigger("click");
+						window.location.reload();
+					}
+				}
+			});
+		}		
 	});
 
 	$(".btn-sm-ap").on("click", function(){
 		$("#add-client").submit();
 	});
 	
+	$(".save-new-pay").on("click", function(){
+		$("#new-pay").submit();
+	});
 
 	/* FUNCTIONS */
 
@@ -212,6 +251,12 @@
 	        "direccion": $('#direccion').val()
 	        });
 	}
-		
+
+
+	/* APARTADO */
+
+	$("#load-pay").on("click", function(){
+		$('#cargar-pago').modal('show');
+	});
 	
 })()

@@ -1,6 +1,9 @@
-<?php
-	
+<?php	
 require "leosport.php";
+date_default_timezone_set('America/Caracas');
+setlocale(LC_TIME, 'spanish'); 
+setlocale(LC_ALL,'es_VE');
+
 
 
 if (!isset($_SESSION)) {  session_start(); }
@@ -68,79 +71,30 @@ function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDe
 }
 }
 
-function parseFecha($fecha, $insert = true){
 
-  if($fecha == "0000-00-00"){
-    return "<strong>Hasta la actualidad.</strong>";
-  }
+function toPrice($price){
+  return "Bs ". number_format($price, !($price == (int)$price) * 2, ',', '.');
+}
 
-  $meses=array("", "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
+// 27 10 13
 
-  if($insert){
-    $datos = explode('/', $fecha);
-    $date = $datos[2]."-".$datos[1]."-".$datos[0];  
-  }else{
-    $datos = explode('-', $fecha);
-    $date = $datos[2]." de ".$meses[$datos[1]*1]." del ".$datos[0]; 
-  }
-  
+function humanDate($date){
+  $time = strtotime($date);
+
+  $date = date("D, d M Y", $time);
+
+  $date = str_replace("Mon", "Lunes", $date);
+  $date = str_replace("Tue", "Martes", $date);
+  $date = str_replace("Wed", "Miércoles", $date);
+  $date = str_replace("Thu", "Jueves", $date);
+  $date = str_replace("Fri", "Viernes", $date);
+  $date = str_replace("Sat", "Sabado", $date);
+  $date = str_replace("Sun", "Domingo", $date);
+
+  $date = str_replace("Jan", "Ene", $date);
+  $date = str_replace("Apr", "Abr", $date);
+  $date = str_replace("Dec", "Dic", $date);
+
   return $date;
 }
-
-
-function mesesDesde($fecha){    
-    $meses = 0;
-    $ano1 = date("Y");$mes1 = date("m");$dia1 = date("d");
-    $date = explode("-", $fecha);
-
-    $timestamp1 = mktime(0,0,0,$mes1,$dia1,$ano1); $timestamp2 = mktime(0,0,0,$date[1],$date[2],$date[0]); 
-    $seg = $timestamp1 - $timestamp2; 
-    $dias = $seg / (60 * 60 * 24); $dias = abs($dias); $d = $dias = floor($dias); 
-
-    while($d>30){ $meses++; $d = $d-30; }
-
-    if($meses>0 && $d > 0){
-      if($meses==1){  return $meses." mes y ".$d." dias";
-      }else{          return $meses." meses y ".$d." dias"; }
-     
-    }else if($meses>0){ return $meses." meses";
-    }else if($d>0){     return $d." dias";
-    }else{              return "Hoy";}
-}
-
-function getDateById($id, $type){
-    global $mysqli, $queries;
-
-    $date = $mysqli->prepare($queries['lasthistory']);
-    $date->bind_param('i', $id);
-    $date->execute();
-
-    $date->bind_result($indate, $outdate, $destacamento);
-    $date->fetch();
-    $date->close();
-
-    $return = array('indate' => $indate , 'outdate' => $outdate , 'destacamento' => $destacamento);
-
-    return $return;
-}
-
-
-/* ADMIN */
-
-function mesesDesde2($fecha){    
-    $meses = 0;
-    $ano1 = date("Y");$mes1 = date("m");$dia1 = date("d");
-    $date = explode("-", $fecha);
-
-    $timestamp1 = mktime(0,0,0,$mes1,$dia1,$ano1); $timestamp2 = mktime(0,0,0,$date[1],$date[2],$date[0]); 
-    $seg = $timestamp1 - $timestamp2; 
-    $dias = $seg / (60 * 60 * 24); $dias = abs($dias); $d = $dias = floor($dias); 
-
-    while($d>30){ $meses++; $d = $d-30; }
-
-    return $meses;
-}
-
-
-
 ?>

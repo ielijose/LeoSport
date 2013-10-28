@@ -14,6 +14,13 @@ $app->post('/client', 'addClient');
 $app->post('/sell', 'sell');
 
 $app->get('/client/search/:ci', 'searchClient');
+$app->get('/sellsByDay', 'sellsByDay');
+
+$app->get('/getSellByDay/:date', 'getSellByDay');
+
+$app->post('/load-pay', 'loadPay');
+
+
 $app->run();
 
 /* ------------------- */
@@ -74,6 +81,31 @@ function addClient() {
     }
 }
 
+function loadPay() {
+    $request = Slim::getInstance()->request();
+    $post = json_decode($request->getBody());
+ 
+    $query = "INSERT INTO pagos (factura_id, pago, descripcion, usuario_id) 
+                VALUES (:factura_id, :pago,  :descripcion, :usuario_id)";
+    $post->usuario_id = (isset($_SESSION['LS_id'])) ? $_SESSION['LS_id'] : 0;
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($query);
+        $stmt->bindParam("factura_id", $post->factura_id);
+        $stmt->bindParam("pago", $post->bs);
+        $stmt->bindParam("descripcion", $post->descripcion);
+        $stmt->bindParam("usuario_id", $post->usuario_id);
+        $stmt->execute();
+        $post->id = $db->lastInsertId();
+
+        $db = null;
+        echo indent('{"pay": ' . json_encode($post) . '}');
+    } catch(PDOException $e) {
+        echo indent('{"pay":{"id":"error", "text":'. $e->getMessage() .'}}');
+    }
+}
+
 function searchClient($ci){
 	$sql = "SELECT c.id, c.ci, c.nombre, c.direccion, (SELECT COUNT(1) FROM facturas f WHERE f.cliente_id = c.id) AS compras FROM clientes c WHERE ci = :ci "; 
 	try {
@@ -94,15 +126,18 @@ function sell(){
     $request = Slim::getInstance()->request();
     $post = json_decode($request->getBody());
 
-    $createBill = "INSERT INTO facturas (cliente_id, usuario_id) VALUES (:cid, :uid)";
+    $createBill = "INSERT INTO facturas (cliente_id, usuario_id, tipo) VALUES (:cid, :uid, :tipo)";
     $uid = (isset($_SESSION['LS_id'])) ? $_SESSION['LS_id'] : 0;
     $cid = ($post->client) ? $post->client : 0;
+
+    $tipo = ($post->apartado == true) ? "apartado" : "venta";
 
     try {
         $db = getConnection();
         $stmt = $db->prepare($createBill);
         $stmt->bindParam("cid", $cid);
         $stmt->bindParam("uid", $uid);
+        $stmt->bindParam("tipo", $tipo);
         $stmt->execute();
         $billId = $db->lastInsertId();
         $db = null;  
@@ -153,18 +188,122 @@ function sell(){
 
     //echo json_encode($json);
 }
+
+function sellsByDay(){
+    $sql = "SELECT DISTINCT (SUBSTR(`timestamp`, 1, 10)) AS start FROM facturas f UNION SELECT DISTINCT (SUBSTR(`timestamp`, 1, 10)) AS start FROM pagos "; 
+    try {
+        $db = getConnection();
+        $stmt = $db->query($sql);  
+        $fechas = $stmt->fetchAll(PDO::FETCH_OBJ);
+        $db = null;
+
+        $json = array();
+    
+        foreach ($fechas as $index => $fecha) {
+            $ventas = getSellByDay($fecha->start."%");
+            $pagos = getPaysByDay($fecha->start."%");
+
+            if($ventas != "Bs 0"){
+                $venta = new stdClass();
+                $venta->title .= "Ventas: ".$ventas;
+
+                $venta->url = "reporte.php?date=".$fecha->start;
+                $venta->start = strtotime($fecha->start." 23:01:01");  
+                $venta->className = 'label-success';
+                $venta->allDay = true;
+
+                $json[count($json)] = $venta;
+
+            }
+            if($pagos != "Bs 0"){
+                $pago = new stdClass();
+                $pago->title .= "Pagos: ".$pagos;
+                $pago->url = "reporte.php?date=".$fecha->start;
+                $pago->start = strtotime($fecha->start." 23:01:01");  
+                $pago->className = 'label-info';
+                $pago->allDay = true;
+
+                $json[count($json)] = $pago;
+            }
+            
+        }
+
+        echo indent(json_encode($json));
+
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+    }
+}
+
+function getSellByDay($date){
+    $billsByDate = "SELECT * FROM facturas f WHERE f.`timestamp` LIKE :date AND tipo = 'venta'";
+    $productsSQL = "SELECT v.id, p.producto, v.cantidad, v.precio, p.id AS pid FROM ventas v INNER JOIN productos p ON p.id = v.producto_id WHERE v.factura_id = :id ";
+
+    $dateHuman = date("d-m-Y ", strtotime($date));
+    $date.="%";
+
+    $db = getConnection();
+    $stmt = $db->prepare($billsByDate);
+    $stmt->bindParam("date", $date);
+    $stmt->execute();
+    $facturas = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+    $products = array();
+    $total = 0;
+
+    foreach ($facturas as $index => $factura) {
+        $p = $db->prepare($productsSQL);
+        $p->bindParam("id", $factura->id);
+        $p->execute();
+        $productos = $p->fetchAll(PDO::FETCH_OBJ); 
+
+        foreach ($productos as $key => $item) {     
+            $pid = $item->producto;
+            $cantidad = $item->cantidad;
+            $total += ($item->precio * $cantidad);
+            
+            if(isset($products[$pid])){
+                $products[$pid] += $cantidad;
+            }else{
+                $products[$pid] = $cantidad;
+            }
+        }
+    }
+
+    return toPrice($total);
+}
+
+function getPaysByDay($date){
+    $paysByDate = "SELECT * FROM pagos p WHERE p.`timestamp` LIKE :date";
+
+    $dateHuman = date("d-m-Y ", strtotime($date));
+    $date.="%";
+
+    $db = getConnection();
+    $stmt = $db->prepare($paysByDate);
+    $stmt->bindParam("date", $date);
+    $stmt->execute();
+    $pagos = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+    $products = array();
+    $total = 0;
+
+    foreach ($pagos as $index => $pago) {
+        $total += $pago->pago;    
+    }
+
+    return toPrice($total);
+}
+
+
 /* ----------------- */
 
 /* GC */
 
 function getConnection() {
-<<<<<<< HEAD
 	$dbhost="localhost";
-=======
-	$dbhost="127.0.0.1";
->>>>>>> ffd1b716ceb57c368d20646cbfdaed89dc35b952
-	$dbuser="";
-	$dbpass="";
+	$dbuser="git";
+	$dbpass="git";
 	$dbname="leosport";
 	$dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -211,15 +350,7 @@ function indent($json) {
 }
 
 function toPrice($price){
-	$re = NULL;
-	if($price == 0 || $price == -1){
-		$re = 'A convenir';
-	}else{
-		$re = 'Bs. '.intval(($price*100))/100;		
-	    number_format($price, 0, ',', '.');	
-	}
-	
-	return $re;
+	return "Bs ". number_format($price, !($price == (int)$price) * 2, ',', '.');
 }
 
 ?>

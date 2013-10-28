@@ -324,10 +324,6 @@ $numrows = $productos->num_rows;
 		<script src="assets/js/jquery.inputlimiter.1.3.1.min.js"></script>
 		<script src="assets/js/jquery.validate.min.js"></script>
 
-
-
-
-		<script src="assets/js/bootstrap.min.js"></script>
 		<script src="assets/js/typeahead-bs2.min.js"></script>
 
 		<script src="assets/js/jquery.dataTables.min.js"></script>
@@ -335,7 +331,9 @@ $numrows = $productos->num_rows;
 
 		<script src="assets/js/ace-elements.min.js"></script>
 		<script src="assets/js/ace.min.js"></script>
-
+		<script type="text/javascript">
+			var apartar = false;
+		</script>
 		<script type="text/javascript" src="assets/js/leosport.js">
 			
 		</script>

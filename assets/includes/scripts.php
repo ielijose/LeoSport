@@ -35,6 +35,12 @@
 	<!--[if lte IE 8]>
 	  <script src="assets/js/excanvas.min.js"></script>
 	<![endif]-->
+	<!--
+	<script src="assets/js/bootstrap.min.js"></script>
+-->
+
+	<script src="assets/js/jquery.dataTables.min.js"></script>
+	<script src="assets/js/jquery.dataTables.bootstrap.js"></script>
 
 	<script src="assets/js/jquery-ui-1.10.3.custom.min.js"></script>
 	<script src="assets/js/jquery.ui.touch-punch.min.js"></script>
@@ -44,6 +50,14 @@
 	<script src="assets/js/flot/jquery.flot.min.js"></script>
 	<script src="assets/js/flot/jquery.flot.pie.min.js"></script>
 	<script src="assets/js/flot/jquery.flot.resize.min.js"></script>
+
+	<!-- inline scripts related to this page -->
+
+	<script src="assets/js/fuelux/fuelux.spinner.min.js"></script>
+	<script src="assets/js/jquery.inputlimiter.1.3.1.min.js"></script>
+	<script src="assets/js/jquery.validate.min.js"></script>
+
+	
 
 	<!-- ace scripts -->
 

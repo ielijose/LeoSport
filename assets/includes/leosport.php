@@ -2,38 +2,69 @@
 
 $host = "localhost";
 $database = "leosport";
-$user = "root";
-$pass = "2512368";
+$user = "git";
+$pass = "git";
 
 $mysqli = new mysqli($host,$user,$pass,$database);
 
 if($mysqli->connect_error){die("Error en la conexion : ".$mysqli ->connect_errno."-".$mysqli ->connect_error);}
 
 
+function getConnection() {
+	$dbhost="localhost";
+	$dbuser="root";
+	$dbpass="2512368";
+	$dbname="leosport";
+	$dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
+	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	return $dbh;
+}
+
+function indent($json) {
+	global $app;
+    $result      = '';
+    $pos         = 0;
+    $strLen      = strlen($json);
+    $indentStr   = '  ';
+    $newLine     = "\n";
+    $prevChar    = '';
+    $outOfQuotes = true;
+    for ($i=0; $i<=$strLen; $i++) {
+        $char = substr($json, $i, 1);
+        if ($char == '"' && $prevChar != '\\') {
+            $outOfQuotes = !$outOfQuotes;
+        } else if(($char == '}' || $char == ']') && $outOfQuotes) {
+            $result .= $newLine;
+            $pos --;
+            for ($j=0; $j<$pos; $j++) {
+                $result .= $indentStr;
+            }
+        }
+        $result .= $char;
+        if (($char == ',' || $char == '{' || $char == '[') && $outOfQuotes) {
+            $result .= $newLine;
+            if ($char == '{' || $char == '[') {
+                $pos ++;
+            }
+            for ($j = 0; $j < $pos; $j++) {
+                $result .= $indentStr;
+            }
+        }
+        $prevChar = $char;
+    }
+    return $result;
+}
+
 /* Default querys */
 
 $queries = array();
-
+// si
 $queries['login'] = "SELECT id, username FROM usuarios WHERE username = ? AND password = ? AND status = 'on'"; 
-$queries['inventory'] = "SELECT id, producto, cantidad, precio FROM productos";
+$queries['inventory'] = "SELECT id, producto, cantidad, precio FROM productos WHERE cantidad>0";
+$queries['bill'] = "SELECT f.id, f.`timestamp`, c.nombre, c.ci, c.direccion, u.username FROM facturas f JOIN clientes c ON c.id = f.cliente_id JOIN usuarios u ON u.id = f.usuario_id WHERE f.id = :id ";
+$queries['products'] = "SELECT v.id, p.producto, v.cantidad, v.precio, p.id AS pid FROM ventas v INNER JOIN productos p ON p.id = v.producto_id WHERE v.factura_id = :id ";
 
-
-
-$queries['hierarchies'] = "SELECT id, grado, descripcion FROM jerarquias ORDER BY id ASC";
-
-$queries['profile'] = "SELECT j.descripcion AS jerarquia, p.apellidos, p.nombres, p.ci, p.fechanac, p.fechagrad, p.promocion, p.carnet,p.procedencia, p.foto, p.date FROM personal p LEFT JOIN jerarquias j ON p.jerarquia_id = j.id WHERE p.id = ?";
-$queries['history'] = "SELECT h.indate, h.outdate, d.destacamento FROM historial h LEFT JOIN destacamentos d ON h.destacamento_id = d.id WHERE h.personal_id  = ?";
-$queries['list'] = "SELECT p.id, j.descripcion AS jerarquia, 
-		(SELECT d.destacamento 
-		 FROM historial h
-		 INNER JOIN destacamentos d ON h.destacamento_id = d.id
-		 WHERE h.personal_id = p.id 
-		 ORDER BY h.id DESC
-		 LIMIT 1) AS destacamento, p.apellidos, p.nombres, p.ci, p.carnet 
-FROM personal p 
-LEFT JOIN jerarquias j ON p.jerarquia_id = j.id";
-
-
-$queries['lasthistory'] = "SELECT h.indate, h.outdate, d.destacamento FROM historial h INNER JOIN destacamentos d ON h.destacamento_id = d.id WHERE h.personal_id = ? ORDER BY h.id DESC LIMIT 1";
+$queries['sells'] = "SELECT f.id, f.`timestamp`, c.nombre, c.ci, c.direccion, u.username FROM facturas f JOIN clientes c ON c.id = f.cliente_id JOIN usuarios u ON u.id = f.usuario_id WHERE f.tipo=:tipo";
+$queries['billsByDate'] = "SELECT * FROM facturas f WHERE f.`timestamp` LIKE :date AND tipo = 'venta' ";
 
 ?>
